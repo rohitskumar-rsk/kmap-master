@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { FaYoutube } from "react-icons/fa";
 import { 
   BookOpen, Brain, CheckCircle, ChevronRight, Play, Settings, 
   RotateCcw, XCircle, AlertCircle, Lightbulb, 
@@ -298,7 +299,15 @@ export default function KMapMaster() {
           <nav className="hidden md:flex space-x-6">
             <button onClick={() => setView('home')} className="font-medium text-gray-600 hover:text-blue-600 transition">Home</button>
             <button onClick={() => setView('practice')} className="font-medium text-gray-600 hover:text-blue-600 transition">Practice</button>
-            <button className="font-medium text-gray-400 cursor-not-allowed">Learn (Soon)</button>
+            <a
+  href="https://www.youtube.com/playlist?list=PLG7FpyEhYMl8"
+  target="_blank"
+  rel="noopener noreferrer"
+  className="flex items-center gap-2 font-medium text-gray-600 hover:text-red-600 transition"
+>
+  <FaYoutube className="text-red-600 text-lg" />
+  <span>Learn</span>
+</a>
           </nav>
         </div>
       </header>
