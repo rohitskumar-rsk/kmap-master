@@ -21,6 +21,7 @@ import {
   AlertTriangle,
   Info
 } from 'lucide-react';
+import logo from "./assets/logo.png";
 
 // Gray Code mappings for K-Maps
 const GRAY_2 = [0, 1];
@@ -303,13 +304,15 @@ export default function KMapMaster() {
       <header className="sticky top-0 z-50 backdrop-blur-md border-b border-gray-200 bg-white/80">
         <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center space-x-2 cursor-pointer" onClick={() => setView('home')}>
-            <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center">
-              <Brain className="w-5 h-5 text-white" />
-            </div>
-            <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-blue-400">
-              KMap Master
-            </span>
-          </div>
+  <img
+    src={logo}
+    alt="KMap Master Logo"
+    className="w-10 h-10 object-contain"
+  />
+  <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-blue-400">
+    KMap Master
+  </span>
+</div>
           
           <nav className="hidden md:flex space-x-6">
             <button onClick={() => setView('home')} className="font-medium text-gray-600 hover:text-blue-600 transition">Home</button>
