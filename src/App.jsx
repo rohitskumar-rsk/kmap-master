@@ -1,10 +1,25 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaYoutube } from "react-icons/fa";
-import { 
-  BookOpen, Brain, CheckCircle, ChevronRight, Play, Settings, 
-  RotateCcw, XCircle, AlertCircle, Lightbulb, 
-  MousePointerClick, Check, Plus, Trash2, ArrowRight
+import {
+  BookOpen,
+  Brain,
+  CheckCircle,
+  ChevronRight,
+  Play,
+  Settings,
+  RotateCcw,
+  XCircle,
+  AlertCircle,
+  Lightbulb,
+  MousePointerClick,
+  Check,
+  Plus,
+  Trash2,
+  ArrowRight,
+  ArrowLeft,
+  AlertTriangle,
+  Info
 } from 'lucide-react';
 
 // Gray Code mappings for K-Maps
@@ -299,6 +314,12 @@ export default function KMapMaster() {
           <nav className="hidden md:flex space-x-6">
             <button onClick={() => setView('home')} className="font-medium text-gray-600 hover:text-blue-600 transition">Home</button>
             <button onClick={() => setView('practice')} className="font-medium text-gray-600 hover:text-blue-600 transition">Practice</button>
+            <button
+    onClick={() => setView("rules")}
+    className="font-medium text-gray-600 hover:text-blue-600 transition"
+>
+    Learn Rules
+</button>
             <a
   href="https://www.youtube.com/playlist?list=PLG7FpyEhYMl8"
   target="_blank"
@@ -315,15 +336,32 @@ export default function KMapMaster() {
       {/* Main Content Area */}
       <main className="max-w-6xl mx-auto px-4 py-8">
         <AnimatePresence mode="wait">
-          {view === 'home' && <HomeView key="home" onStart={() => setView('practice')} />}
-          {view === 'practice' && <PracticeTutor key="practice" />}
+          {view === "home" && (
+    <HomeView
+        key="home"
+        onStart={() => setView("practice")}
+        onLearn={() => setView("rules")}
+    />
+)}
+
+{view === "practice" && (
+    <PracticeTutor key="practice" />
+)}
+
+{view === "rules" && (
+    <RulesView
+        key="rules"
+        onHome={() => setView("home")}
+        onPractice={() => setView("practice")}
+    />
+)}
         </AnimatePresence>
       </main>
     </div>
   );
 }
 
-function HomeView({ onStart }) {
+function HomeView({ onStart, onLearn }) {
   return (
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
@@ -354,7 +392,9 @@ function HomeView({ onStart }) {
           <Play className="w-5 h-5" fill="currentColor" />
           <span>Start Practice</span>
         </button>
-        <button className="flex items-center justify-center space-x-2 bg-white border border-gray-200 text-gray-900 hover:bg-gray-50 px-8 py-4 rounded-xl text-lg font-bold shadow-sm transition-all">
+        <button
+        onClick={onLearn}
+         className="flex items-center justify-center space-x-2 bg-white border border-gray-200 text-gray-900 hover:bg-gray-50 px-8 py-4 rounded-xl text-lg font-bold shadow-sm transition-all">
           <BookOpen className="w-5 h-5" />
           <span>Learn Rules</span>
         </button>
@@ -985,5 +1025,229 @@ function KMapGrid({ vars, userGrid, setUserGrid, step, userGroups, currentSelect
         </div>
       </div>
     </div>
+  );
+}
+// -------------------------------------------------------------
+// NEW FEATURE: LEARN RULES VIEW
+// -------------------------------------------------------------
+
+function Callout({ type, title, text }) {
+  const styles = {
+    info: { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-800', icon: <Info className="w-5 h-5 text-blue-500 mt-0.5" /> },
+    tip: { bg: 'bg-green-50', border: 'border-green-200', text: 'text-green-800', icon: <Lightbulb className="w-5 h-5 text-green-500 mt-0.5" /> },
+    note: { bg: 'bg-yellow-50', border: 'border-yellow-200', text: 'text-yellow-800', icon: <AlertTriangle className="w-5 h-5 text-yellow-500 mt-0.5" /> },
+    error: { bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-800', icon: <XCircle className="w-5 h-5 text-red-500 mt-0.5" /> },
+  }[type];
+
+  return (
+    <div className={`mt-4 p-4 rounded-xl border flex items-start space-x-3 ${styles.bg} ${styles.border}`}>
+      <div className="flex-shrink-0">{styles.icon}</div>
+      <div>
+        {title && <h5 className={`font-bold mb-1 ${styles.text}`}>{title}</h5>}
+        <p className={`text-sm ${styles.text}`}>{text}</p>
+      </div>
+    </div>
+  );
+}
+
+function MiniGrid({ size = 4, children }) {
+  const cols = size === 4 ? 'grid-cols-4' : 'grid-cols-2';
+  return (
+    <div className={`grid ${cols} gap-[1px] bg-gray-300 border border-gray-300 p-[1px] rounded-lg shadow-sm w-full max-w-[200px] mx-auto mt-6 mb-4`}>
+      {children}
+    </div>
+  );
+}
+
+function MiniCell({ val, overlays = [] }) {
+  return (
+    <div className="bg-white h-10 w-full relative flex items-center justify-center font-bold text-gray-800">
+      <span className={val === 'X' ? 'text-red-500' : val === '1' ? 'text-blue-600' : 'text-gray-300'}>{val || ''}</span>
+      {overlays.map((overlay, i) => (
+        <div key={i} className={`absolute pointer-events-none ${overlay}`} />
+      ))}
+    </div>
+  );
+}
+
+function RulesView({ onHome, onPractice }) {
+  const rules = [
+    {
+      title: "What is a Karnaugh Map?",
+      content: "A K-Map is a visual method used to simplify Boolean algebra expressions without using complex theorems. It acts as a 2D grid representation of a truth table, mapping inputs to outputs.",
+      callout: { type: 'info', title: 'Why use it?', text: "K-Maps make recognizing patterns and grouping 1s easy and intuitive. Adjacent cells physically differ by only one variable, making simplification visual rather than algebraic." }
+    },
+    {
+      title: "Gray Code Ordering",
+      content: "Rows and columns use Gray Code sequence (00, 01, 11, 10) instead of standard binary. This is the secret ingredient of K-Maps!",
+      visual: (
+        <div className="flex justify-center space-x-2 my-6">
+          {['00', '01', '11', '10'].map((code, i) => (
+            <div key={code} className="flex flex-col items-center">
+              <span className="bg-blue-100 text-blue-800 font-mono font-bold px-3 py-2 rounded-lg border border-blue-200">{code}</span>
+              {i < 3 && <ArrowRight className="w-4 h-4 text-gray-400 mt-2" />}
+            </div>
+          ))}
+        </div>
+      ),
+      callout: { type: 'error', title: 'Common Mistake', text: "Writing the sequence as 00, 01, 10, 11. Remember, 11 must come before 10 so that only one bit changes at a time!" }
+    },
+    {
+      title: "Valid Group Sizes",
+      content: "You can only group cells in powers of 2. This means groups can contain 1, 2, 4, 8, or 16 cells. No other sizes are mathematically valid for simplification.",
+      visual: (
+        <MiniGrid size={4}>
+          {Array.from({length: 16}).map((_, i) => {
+             // 4-group in top-left
+             const isG4 = [0,1,4,5].includes(i);
+             const g4Class = "inset-[2px] bg-green-400/30 border-2 border-green-500 rounded";
+             // 2-group on right
+             const isG2 = [7,11].includes(i);
+             const g2Class = "inset-[2px] bg-blue-400/30 border-2 border-blue-500 rounded";
+             return <MiniCell key={i} val={isG4 || isG2 ? '1' : ''} overlays={[isG4 && g4Class, isG2 && g2Class].filter(Boolean)} />
+          })}
+        </MiniGrid>
+      ),
+      callout: { type: 'note', text: "Never make a group of 3 or 6. If you see 3 adjacent 1s, you must make a group of 2 and another overlapping group of 2." }
+    },
+    {
+      title: "Wrap Around Rule",
+      content: "The K-Map is continuous! The left edge is adjacent to the right edge, and the top edge is adjacent to the bottom edge. Imagine the map folded into a donut (torus).",
+      visual: (
+        <MiniGrid size={4}>
+          {Array.from({length: 16}).map((_, i) => {
+             const isLeft = i % 4 === 0;
+             const isRight = i % 4 === 3;
+             let gClass = "";
+             if (isLeft) gClass = "inset-y-[2px] inset-l-[2px] right-0 bg-purple-400/30 border-y-2 border-l-2 border-purple-500 rounded-l";
+             if (isRight) gClass = "inset-y-[2px] inset-r-[2px] left-0 bg-purple-400/30 border-y-2 border-r-2 border-purple-500 rounded-r";
+             return <MiniCell key={i} val={isLeft || isRight ? '1' : ''} overlays={[gClass].filter(Boolean)} />
+          })}
+        </MiniGrid>
+      ),
+      callout: { type: 'tip', title: 'Corner Grouping', text: "You can group all four corners together! This creates a valid 4-cell group representing the outer edges." }
+    },
+    {
+      title: "Overlapping Groups",
+      content: "Groups are allowed to overlap. In fact, they should overlap if it helps you form a larger valid group. Every '1' must be covered at least once, but can be covered multiple times.",
+      visual: (
+        <MiniGrid size={4}>
+          {Array.from({length: 16}).map((_, i) => {
+             const g1 = [5,6].includes(i);
+             const g2 = [6,10].includes(i);
+             let overlays = [];
+             if (g1) overlays.push("inset-[3px] bg-yellow-400/30 border-2 border-yellow-500 rounded");
+             if (g2) overlays.push("inset-[1px] bg-cyan-400/30 border-2 border-cyan-500 rounded");
+             return <MiniCell key={i} val={g1 || g2 ? '1' : ''} overlays={overlays} />
+          })}
+        </MiniGrid>
+      ),
+      callout: { type: 'error', title: 'Redundant Groups', text: "Do not create a group whose 1s are ALL completely covered by other groups. This adds unnecessary terms to your final equation." }
+    },
+    {
+      title: "Don't Care Conditions (X)",
+      content: "Sometimes an input combination will never happen, or we don't care what the output is. These are marked as 'X'. You can treat an 'X' as a '1' if it helps make a larger group, or ignore it as a '0' if it doesn't.",
+      visual: (
+        <MiniGrid size={4}>
+          {Array.from({length: 16}).map((_, i) => {
+             const inGroup = [8,9,12,13].includes(i);
+             const isX = [9,13].includes(i);
+             const is1 = [8,12].includes(i);
+             let overlay = inGroup ? "inset-[2px] bg-orange-400/30 border-2 border-orange-500 rounded" : "";
+             return <MiniCell key={i} val={isX ? 'X' : is1 ? '1' : ''} overlays={[overlay].filter(Boolean)} />
+          })}
+        </MiniGrid>
+      ),
+      callout: { type: 'tip', text: "Never group an 'X' purely by itself or only with other 'X's. Only group them if they expand a group that contains at least one real '1'." }
+    },
+  ];
+
+  return (
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      className="max-w-4xl mx-auto"
+    >
+      {/* Top Header */}
+      <div className="flex items-center justify-between mb-8">
+        <button 
+          onClick={onHome}
+          className="flex items-center text-gray-500 hover:text-blue-600 font-medium transition-colors bg-white px-4 py-2 rounded-xl border shadow-sm"
+        >
+          <ArrowLeft className="w-5 h-5 mr-2" /> Back to Home
+        </button>
+        <h1 className="text-3xl font-extrabold text-gray-900 flex items-center">
+          <BookOpen className="w-8 h-8 text-blue-600 mr-3" /> Learn Rules
+        </h1>
+      </div>
+
+      {/* Rules Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        {rules.map((rule, idx) => (
+          <motion.div 
+            key={idx}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: idx * 0.1 }}
+            className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow"
+          >
+            <div className="flex items-center mb-4">
+              <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 font-bold flex items-center justify-center mr-3 flex-shrink-0">
+                {idx + 1}
+              </div>
+              <h3 className="text-xl font-bold text-gray-900">{rule.title}</h3>
+            </div>
+            <p className="text-gray-600 leading-relaxed mb-4">
+              {rule.content}
+            </p>
+            {rule.visual}
+            {rule.callout && (
+              <Callout type={rule.callout.type} title={rule.callout.title} text={rule.callout.text} />
+            )}
+          </motion.div>
+        ))}
+      </div>
+
+      {/* Checklist Card */}
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.6 }}
+        className="bg-green-50 border border-green-200 rounded-2xl p-8 mb-10 shadow-sm"
+      >
+        <h3 className="text-2xl font-bold text-green-800 mb-6 flex items-center">
+          <CheckCircle className="w-7 h-7 mr-3 text-green-600" /> Optimal Solution Checklist
+        </h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {[
+            "Groups contain only powers of two (1, 2, 4, 8, 16).",
+            "No group contains a '0'.",
+            "Every '1' is covered by at least one group.",
+            "Largest possible valid groups were chosen.",
+            "Overlapping was used to make groups larger.",
+            "Wrap-around edges and corners were considered.",
+            "No redundant groups were included.",
+            "Expression simplified down to minimal literals."
+          ].map((item, i) => (
+            <div key={i} className="flex items-start">
+              <Check className="w-5 h-5 text-green-600 mr-2 flex-shrink-0 mt-0.5" />
+              <span className="text-green-900 font-medium">{item}</span>
+            </div>
+          ))}
+        </div>
+      </motion.div>
+
+      {/* Action Footer */}
+      <div className="flex justify-center mb-20">
+        <button 
+          onClick={onPractice}
+          className="flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-10 py-5 rounded-2xl text-xl font-bold shadow-lg shadow-blue-600/30 transition-all hover:scale-105"
+        >
+          <Play className="w-6 h-6" fill="currentColor" />
+          <span>I'm Ready, Start Practice</span>
+        </button>
+      </div>
+    </motion.div>
   );
 }
